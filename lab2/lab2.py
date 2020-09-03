@@ -99,7 +99,30 @@ def dfs(graph, start, goal):
 ## Remember that hill-climbing is a modified version of depth-first search.
 ## Search direction should be towards lower heuristic values to the goal.
 def hill_climbing(graph, start, goal):
-    raise NotImplementedError
+    agenda = [ [start] ]
+
+    while len(agenda) > 0:
+        path = agenda.pop(0)
+        
+        parent = path[len(path) - 1]
+
+        if parent == goal and graph.is_valid_path(path):
+            return path
+
+        childs = graph.get_connected_nodes(parent)
+        childs.sort(key=lambda c: graph.get_heuristic(c, goal), reverse=True)
+
+        for node in childs:
+            if node in path:
+                continue
+
+            new_path = list(path)
+            new_path.append(node)
+
+            # algorithms differ here
+            agenda.insert(0, new_path)
+
+    raise Exception("can't find the goal")
 
 ## Now we're going to implement beam search, a variation on BFS
 ## that caps the amount of memory used to store paths.  Remember,
@@ -107,7 +130,35 @@ def hill_climbing(graph, start, goal):
 ## The k top candidates are to be determined using the 
 ## graph get_heuristic function, with lower values being better values.
 def beam_search(graph, start, goal, beam_width):
-    raise NotImplementedError
+    agenda = [ [start] ]
+    agenda_len = 1
+
+    while len(agenda) > 0:
+        path = agenda.pop(0)
+        
+        parent = path[len(path) - 1]
+
+        if parent == goal and graph.is_valid_path(path):
+            return path
+
+        childs = graph.get_connected_nodes(parent)
+
+        for node in childs:
+            if node in path:
+                continue
+
+            new_path = list(path)
+            new_path.append(node)
+
+            # algorithms differ here
+            agenda.append(new_path)
+        
+        if len(agenda) > 0 and len(agenda[0]) > agenda_len:
+            agenda.sort(key=lambda path: graph.get_heuristic(path[len(path)-1], goal))
+            agenda = agenda[:beam_width]
+            agenda_len += 1
+
+    return []
 
 ## Now we're going to try optimal search.  The previous searches haven't
 ## used edge distances in the calculation.
@@ -115,7 +166,17 @@ def beam_search(graph, start, goal, beam_width):
 ## This function takes in a graph and a list of node names, and returns
 ## the sum of edge lengths along the path -- the total distance in the path.
 def path_length(graph, node_names):
-    raise NotImplementedError
+    res = 0
+
+    if len(node_names) < 2:
+        return res
+
+    for i in range(1, len(node_names)):
+        prev = node_names[i - 1]
+        curr = node_names[i]
+        edge = graph.get_edge(prev, curr)
+        res += edge.length
+    return res
 
 
 def branch_and_bound(graph, start, goal):
