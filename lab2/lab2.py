@@ -62,7 +62,7 @@ def bfs(graph, start, goal):
             # algorithms differ here
             agenda.append(new_path)
 
-    raise Exception("can't find the goal")
+    return []
         
 
        
@@ -92,7 +92,7 @@ def dfs(graph, start, goal):
             # algorithms differ here
             agenda.insert(0, new_path)
 
-    raise Exception("can't find the goal")
+    return []
 
 
 ## Now we're going to add some heuristics into the search.  
@@ -122,7 +122,7 @@ def hill_climbing(graph, start, goal):
             # algorithms differ here
             agenda.insert(0, new_path)
 
-    raise Exception("can't find the goal")
+    return []
 
 ## Now we're going to implement beam search, a variation on BFS
 ## that caps the amount of memory used to store paths.  Remember,
@@ -180,7 +180,30 @@ def path_length(graph, node_names):
 
 
 def branch_and_bound(graph, start, goal):
-    raise NotImplementedError
+    agenda = [ [start] ]
+
+    while len(agenda) > 0:
+        path = agenda.pop(0)
+        
+        parent = path[len(path) - 1]
+
+        if parent == goal and graph.is_valid_path(path):
+            return path
+
+        childs = graph.get_connected_nodes(parent)
+
+        for node in childs:
+            if node in path:
+                continue
+
+            new_path = list(path)
+            new_path.append(node)
+
+            # algorithms differ here
+            agenda.append(new_path)
+            agenda.sort(key=lambda p: path_length(graph, p))
+
+    return []
 
 def a_star(graph, start, goal):
     raise NotImplementedError
