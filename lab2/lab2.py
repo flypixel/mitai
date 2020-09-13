@@ -201,12 +201,42 @@ def branch_and_bound(graph, start, goal):
 
             # algorithms differ here
             agenda.append(new_path)
-            agenda.sort(key=lambda p: path_length(graph, p))
+
+        agenda.sort(key=lambda p: path_length(graph, p))
 
     return []
 
 def a_star(graph, start, goal):
-    raise NotImplementedError
+    agenda = [ [start] ]
+    extended_set = []
+    while len(agenda) > 0:
+        path = agenda.pop(0)
+        
+        parent = path[len(path) - 1]
+
+        if parent == goal and graph.is_valid_path(path):
+            return path
+
+        childs = graph.get_connected_nodes(parent)
+
+        for node in childs:
+            if node in path:
+                continue
+
+            if node in extended_set:
+                continue
+
+            new_path = list(path)
+            new_path.append(node)
+
+            # algorithms differ here
+            agenda.append(new_path)
+            extended_set.append(node)
+            
+        agenda.sort(key=lambda p: path_length(graph, p) + graph.get_heuristic(p[len(p)-1], goal))
+
+    return []
+
 
 
 ## It's useful to determine if a graph has a consistent and admissible
@@ -215,11 +245,62 @@ def a_star(graph, start, goal):
 ## consistent, but not admissible?
 
 def is_admissible(graph, goal):
-    raise NotImplementedError
+    agenda = [ [goal] ]
+    extended_set = []
+
+    while len(agenda) > 0:
+        path = agenda.pop(0)
+
+        parent = path[len(path) - 1]
+
+        if (path_length(graph, path) < graph.get_heuristic(parent, goal)):
+            return False
+
+        if parent in extended_set:
+            continue
+
+        extended_set.append(parent)
+
+        childs = graph.get_connected_nodes(parent)
+
+        for node in childs:
+            if node in path:
+                continue
+
+            new_path = list(path)
+            new_path.append(node)
+
+            # algorithms differ here
+            agenda.append(new_path)
+
+    return True
 
 def is_consistent(graph, goal):
-    raise NotImplementedError
+    agenda = [ goal ]
+    extended_set = []
 
-HOW_MANY_HOURS_THIS_PSET_TOOK = ''
-WHAT_I_FOUND_INTERESTING = ''
-WHAT_I_FOUND_BORING = ''
+    while len(agenda) > 0:
+        parent = agenda.pop(0)
+
+        if parent in extended_set:
+            continue
+
+        extended_set.append(parent)
+        
+        childs = graph.get_connected_nodes(parent)
+
+        for child in childs:
+            edge = graph.get_edge(parent, child)
+            h_parent = graph.get_heuristic(parent, goal)
+            h_child = graph.get_heuristic(child, goal)
+
+            if edge.length < abs(h_child - h_parent):
+                return False
+
+            agenda.append(child)
+
+    return True
+
+HOW_MANY_HOURS_THIS_PSET_TOOK = '4'
+WHAT_I_FOUND_INTERESTING = 'Everything'
+WHAT_I_FOUND_BORING = 'Nothing'
