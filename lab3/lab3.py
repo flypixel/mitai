@@ -57,7 +57,25 @@ def focused_evaluate(board):
     A return value >= 1000 means that the current player has won;
     a return value <= -1000 means that the current player has lost
     """    
-    raise NotImplementedError
+    if board.is_game_over():
+        # If the game has been won, we know that it must have been
+        # won or ended by the previous move.
+        # The previous move was made by our opponent.
+        # Therefore, we can't have won, so return -1000.
+        # (note that this causes a tie to be treated like a loss)
+        score = -1000
+    else:
+        score = board.longest_chain(board.get_current_player_id()) * 10
+        score -= board.longest_chain(board.get_other_player_id()) * 10
+        # Prefer having your pieces in the center of the board.
+        for row in range(6):
+            for col in range(7):
+                if board.get_cell(row, col) == board.get_current_player_id():
+                    score -= abs(3-col)
+                elif board.get_cell(row, col) == board.get_other_player_id():
+                    score += abs(3-col)
+
+    return score
 
 
 ## Create a "player" function that uses the focused_evaluate function
@@ -65,7 +83,7 @@ quick_to_win_player = lambda board: minimax(board, depth=4,
                                             eval_fn=focused_evaluate)
 
 ## You can try out your new evaluation function by uncommenting this line:
-#run_game(basic_player, quick_to_win_player)
+run_game(basic_player, quick_to_win_player)
 
 ## Write an alpha-beta-search procedure that acts like the minimax-search
 ## procedure, but uses alpha-beta pruning to avoid searching bad ideas
