@@ -59,12 +59,8 @@ def focused_evaluate(board):
     progress = board.num_tokens_on_board()
     pcurr = board.get_current_player_id()
     pother = board.get_other_player_id()
-    if board.is_win() == pcurr:
-        score = 1000
-        score -= progress * 10
-    elif board.is_win() == pother:
+    if board.is_game_over():
         score = -1000
-        score += progress * 10
     else:
         pcurr_chain = board.longest_chain(pcurr)
         pother_chain = board.longest_chain(pother)
@@ -147,12 +143,16 @@ def alpha_beta_search(board, depth,
 		      is_terminal_fn=is_terminal,
               verbose=False):
     best_val = None
+    alpha = NEG_INFINITY
     for move, new_board in get_next_moves_fn(board):
-        val = min_value(new_board, depth-1, eval_fn, NEG_INFINITY, INFINITY,
+        val = min_value(new_board, depth-1, eval_fn, alpha, INFINITY,
                                             get_next_moves_fn,
                                             is_terminal_fn)
         if best_val == None or val > best_val[0]:
             best_val = (val, move)
+        
+        alpha = max(alpha, best_val[0])
+
             
     if verbose:
         print "ALPHA-BETA: Decided on column %s with rating %s" % (best_val[1], best_val[0])
@@ -209,7 +209,7 @@ def better_evaluate(board):
 #better_evaluate = memoize(basic_evaluate)
 
 # Uncomment this line to make your better_evaluate run faster.
-# better_evaluate = memoize(better_evaluate)
+better_evaluate = memoize(better_evaluate)
 
 # For debugging: Change this if-guard to True, to unit-test
 # your better_evaluate function.
