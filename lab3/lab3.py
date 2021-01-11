@@ -59,28 +59,31 @@ def focused_evaluate(board):
     progress = board.num_tokens_on_board()
     pcurr = board.get_current_player_id()
     pother = board.get_other_player_id()
+    chains = board.chain_cells(pcurr)
+
     if board.is_game_over():
         score = -1000
     else:
-        pcurr_chain = board.longest_chain(pcurr)
-        pother_chain = board.longest_chain(pother)
+        if len(chains) < 1: return 0
+        score = max(chains, key=len) * 10
+        score = len(filter(lambda c: len(c) >= 3, chains)) * 10
+        for chain in chains:
+            for cell in chain:
+                score -= abs(3 - cell[1])
+            
+            length = len(chain)
 
-        if pcurr_chain >= pother_chain:
-            score = pcurr_chain * 20
-            score -= pother_chain * 10
-        else:
-            score = pcurr_chain * 30
-            score -= pother_chain * 20
+            score -= progress / 2 - length
 
     return score
 
 
 ## Create a "player" function that uses the focused_evaluate function
-quick_to_win_player = lambda board: minimax(board, depth=5,
+quick_to_win_player = lambda board: minimax(board, depth=4,
                                             eval_fn=focused_evaluate)
 
 ## You can try out your new evaluation function by uncommenting this line:
-#run_game(basic_player, quick_to_win_player)
+run_game(basic_player, quick_to_win_player)
 
 ## Write an alpha-beta-search procedure that acts like the minimax-search
 ## procedure, but uses alpha-beta pruning to avoid searching bad ideas
