@@ -65,7 +65,7 @@ def focused_evaluate(board):
         score = -1000
     else:
         if len(chains) < 1: return 0
-        score = max(chains, key=len) * 10
+        score = len(max(chains, key=len)) * 100
         score = len(filter(lambda c: len(c) >= 3, chains)) * 10
         for chain in chains:
             for cell in chain:
@@ -83,7 +83,7 @@ quick_to_win_player = lambda board: minimax(board, depth=4,
                                             eval_fn=focused_evaluate)
 
 ## You can try out your new evaluation function by uncommenting this line:
-run_game(basic_player, quick_to_win_player)
+#run_game(basic_player, quick_to_win_player)
 
 ## Write an alpha-beta-search procedure that acts like the minimax-search
 ## procedure, but uses alpha-beta pruning to avoid searching bad ideas
@@ -109,7 +109,7 @@ def max_value(board, depth, eval_fn, alpha, beta,
         alpha = max(alpha, best_val)
 
         if alpha >= beta:
-            return alpha
+            break
 
     return best_val
 
@@ -120,7 +120,7 @@ def min_value(board, depth, eval_fn, alpha, beta,
     Alpha beta min function
     """
     if is_terminal_fn(depth, board):
-        return eval_fn(board)
+        return -1 * eval_fn(board)
 
     best_val = INFINITY
     
@@ -131,7 +131,7 @@ def min_value(board, depth, eval_fn, alpha, beta,
         beta = min(beta, best_val)
 
         if alpha >= beta:
-            return beta
+            break
 
     return best_val
 
@@ -144,7 +144,7 @@ def alpha_beta_search(board, depth,
                       # for connect_four.
                       get_next_moves_fn=get_all_next_moves,
 		      is_terminal_fn=is_terminal,
-              verbose=False):
+              verbose=True):
     best_val = None
     alpha = NEG_INFINITY
     for move, new_board in get_next_moves_fn(board):
@@ -156,11 +156,11 @@ def alpha_beta_search(board, depth,
         
         alpha = max(alpha, best_val[0])
 
-            
     if verbose:
         print "ALPHA-BETA: Decided on column %s with rating %s" % (best_val[1], best_val[0])
 
     return best_val[1]
+    #return minimax(board, depth, eval_fn, get_next_moves_fn, is_terminal_fn, verbose)
 
 ## Now you should be able to search twice as deep in the same amount of time.
 ## (Of course, this alpha-beta-player won't work until you've defined
@@ -270,7 +270,7 @@ def run_test_tree_search(search, board, depth):
 ## Do you want us to use your code in a tournament against other students? See
 ## the description in the problem set. The tournament is completely optional
 ## and has no effect on your grade.
-COMPETE = (None)
+COMPETE = False
 
 ## The standard survey questions.
 HOW_MANY_HOURS_THIS_PSET_TOOK = "20"
