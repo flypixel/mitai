@@ -165,17 +165,17 @@ ab_iterative_player = lambda board: \
 
 def calc_score(board, id, m, k):
     chains = board.chain_cells(id)
-    score = 0
+    score = len(max(chains, key=len)) * m
     for chain in chains:
+        for cell in chain:
+            score -= k * abs(3 - cell[1])
+
         length = len(chain)
 
-        if length < 1:
+        if length < 2:
             continue
 
         score += length * m
-
-        for cell in chain:
-            score -= k * abs(3 - cell[1]) * m
 
     return score
 
@@ -187,7 +187,7 @@ def better_evaluate(board):
         score = -1000
     else:
         score += calc_score(board, pcurr, 10, 1)
-        score -= calc_score(board, pother, 5, 1)
+        score -= calc_score(board, pother, 1, 1)
     return score
 # Comment this line after you've fully implemented better_evaluate
 #better_evaluate = memoize(basic_evaluate)
