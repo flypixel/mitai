@@ -91,7 +91,7 @@ quick_to_win_player = lambda board: minimax(board, depth=4,
 ## counting the number of static evaluations you make.
 ##
 ## You can use minimax() in basicplayer.py as an example.
-def max_value(board, depth, eval_fn, alpha, beta,
+def alpha_beta_value(board, depth, eval_fn, alpha, beta,
                              get_next_moves_fn=get_all_next_moves,
                              is_terminal_fn=is_terminal):
     """
@@ -101,39 +101,20 @@ def max_value(board, depth, eval_fn, alpha, beta,
         return eval_fn(board)
 
     best_val = NEG_INFINITY
+    newalpha = -1 * beta
+    newbeta = -1 * alpha
     
     for move, new_board in get_next_moves_fn(board):
-        val =  min_value(new_board, depth-1, eval_fn, alpha, beta,
+        val = -1 * alpha_beta_value(new_board, depth-1, eval_fn, newalpha, newbeta,
                                             get_next_moves_fn, is_terminal_fn)
         best_val = max(best_val, val)
-        alpha = max(alpha, best_val)
+        newalpha = max(newalpha, best_val)
 
-        if alpha >= beta:
+        if newalpha >= newbeta:
             break
 
     return best_val
 
-def min_value(board, depth, eval_fn, alpha, beta,
-                             get_next_moves_fn=get_all_next_moves,
-                             is_terminal_fn=is_terminal):
-    """
-    Alpha beta min function
-    """
-    if is_terminal_fn(depth, board):
-        return -1 * eval_fn(board)
-
-    best_val = INFINITY
-    
-    for move, new_board in get_next_moves_fn(board):
-        val =  max_value(new_board, depth-1, eval_fn, alpha, beta,
-                                            get_next_moves_fn, is_terminal_fn)
-        best_val = min(best_val, val)
-        beta = min(beta, best_val)
-
-        if alpha >= beta:
-            break
-
-    return best_val
 
 def alpha_beta_search(board, depth,
                       eval_fn,
@@ -148,7 +129,7 @@ def alpha_beta_search(board, depth,
     best_val = None
     alpha = NEG_INFINITY
     for move, new_board in get_next_moves_fn(board):
-        val = min_value(new_board, depth-1, eval_fn, alpha, INFINITY,
+        val = -1 * alpha_beta_value(new_board, depth-1, eval_fn, alpha, INFINITY,
                                             get_next_moves_fn,
                                             is_terminal_fn)
         if best_val == None or val > best_val[0]:
