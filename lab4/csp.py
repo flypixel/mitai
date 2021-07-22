@@ -274,11 +274,11 @@ def basic_constraint_checker(state, verbose=False):
     """
     constraints = state.get_all_constraints()
     for constraint in constraints:
-	var_i = state.get_variable_by_name(constraint.get_variable_i_name())
-	var_j = state.get_variable_by_name(constraint.get_variable_j_name())
+        var_i = state.get_variable_by_name(constraint.get_variable_i_name())
+        var_j = state.get_variable_by_name(constraint.get_variable_j_name())
 	
-	if not var_i.is_assigned() or not var_j.is_assigned():
-	    continue
+        if not var_i.is_assigned() or not var_j.is_assigned():
+            continue
 	
         if not constraint.check(state):
             if verbose:

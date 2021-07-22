@@ -5,7 +5,23 @@ import math
 ## CSP portion of lab 4.
 ##
 from csp import BinaryConstraint, CSP, CSPState, Variable,\
-    basic_constraint_checker, solve_csp_problem
+    basic_constraint_checker, solve_csp_problem, simple_csp_problem
+
+def check_and_reduce(state, var_i):
+    neighbor_constraints = state.get_constraints_by_name(var_i.get_name())
+    for constraint in neighbor_constraints:
+        var_j = state.get_variable_by_name(constraint.get_variable_j_name())
+        
+        if var_j.is_assigned():
+            continue
+
+        for value_j in var_j.get_domain():
+            if not constraint.check(state, var_i.get_assigned_value(), value_j):
+                var_j.reduce_domain(value_j)
+
+            if var_j.domain_size() == 0:
+                return False
+    return True
 
 # Implement basic forward checking on the CSPState see csp.py
 def forward_checking(state, verbose=False):
@@ -16,8 +32,13 @@ def forward_checking(state, verbose=False):
         return False
 
     # Add your forward checking logic here.
-    
-    raise NotImplementedError
+    var_i = state.get_current_variable()
+    if var_i is None:
+        return True
+
+    return check_and_reduce(state, var_i)
+
+# solve_csp_problem(simple_csp_problem, forward_checking, True)
 
 # Now Implement forward checking + (constraint) propagation through
 # singleton domains.
@@ -28,7 +49,25 @@ def forward_checking_prop_singleton(state, verbose=False):
         return False
 
     # Add your propagate singleton logic here.
-    raise NotImplementedError
+    queue = filter(lambda x: x.domain_size() == 1, state.get_all_variables())
+    visited_singletons = []
+
+    while len(queue) > 0:
+        var_i = queue.pop(0).copy()
+        var_i.set_value(var_i.get_domain()[0])
+        visited_singletons.append(var_i.get_name())
+
+        if not check_and_reduce(state, var_i):
+            return False
+
+        new_singletons = filter(
+            lambda x: x.domain_size() == 1 and not any(s == x.get_name() for s in visited_singletons), 
+            state.get_all_variables())
+        queue += new_singletons
+
+    return True
+
+#solve_csp_problem(simple_csp_problem, forward_checking_prop_singleton, True)
 
 ## The code here are for the tester
 ## Do not change.
@@ -40,6 +79,8 @@ def csp_solver_tree(problem, checker):
     checker_func = globals()[checker]
     answer, search_tree = problem_func().solve(checker_func)
     return search_tree.tree_to_string(search_tree)
+
+# solve_csp_problem(moose_csp_problem, forward_checking_prop_singleton, True)
 
 ##
 ## CODE for the learning portion of lab 4.
