@@ -110,17 +110,27 @@ senate_group1, senate_group2 = crosscheck_groups(senate_people)
 ## computes Hamming distances.
 
 def euclidean_distance(list1, list2):
-    # this is not the right solution!
-    return hamming_distance(list1, list2)
+    # Make sure we're working with lists
+    # Sorry, no other iterables are permitted
+    assert isinstance(list1, list)
+    assert isinstance(list2, list)
+
+    dist = 0
+
+    # 'zip' is a Python builtin, documented at
+    # <http://www.python.org/doc/lib/built-in-funcs.html>
+    for item1, item2 in zip(list1, list2):
+        dist += pow(item1 - item2, 2)
+    return math.sqrt(dist)
 
 #Once you have implemented euclidean_distance, you can check the results:
-#evaluate(nearest_neighbors(euclidean_distance, 1), senate_group1, senate_group2)
+# evaluate(nearest_neighbors(euclidean_distance, 1), senate_group1, senate_group2)
 
 ## By changing the parameters you used, you can get a classifier factory that
 ## deals better with independents. Make a classifier that makes at most 3
 ## errors on the Senate.
 
-my_classifier = nearest_neighbors(hamming_distance, 1)
+my_classifier = nearest_neighbors(euclidean_distance, 5)
 #evaluate(my_classifier, senate_group1, senate_group2, verbose=1)
 
 ### Part 2: ID Trees
@@ -130,10 +140,38 @@ my_classifier = nearest_neighbors(hamming_distance, 1)
 ## which should lead to simpler trees.
 
 def information_disorder(yes, no):
-    return homogeneous_disorder(yes, no)
+    classes_yes = dict()
+    classes_no = dict()
 
+    classes = set(yes + no)
+
+    p = float(len(yes))
+    n = float(len(no))
+    t = p + n
+    dp = D(yes, classes)
+    dn = D(no, classes)
+
+    res = dp * (p / t) + dn * (n / t)
+
+    return res
+
+def D(data, classes):
+    classes_count = dict()
+    count = float(len(data))
+    for c in classes:
+        classes_count[c] = 0.0
+    
+    for x in data:
+        classes_count[x] += 1.0
+
+    d = 0.0
+    for c in classes:
+        if count > 0 and classes_count[c] > 0:
+            d -= (classes_count[c]/count) * math.log(classes_count[c]/count, 2)
+    return d
+    
 #print CongressIDTree(senate_people, senate_votes, information_disorder)
-#evaluate(idtree_maker(senate_votes, homogeneous_disorder), senate_group1, senate_group2)
+#print evaluate(idtree_maker(senate_votes, information_disorder), senate_group1, senate_group2)
 
 ## Now try it on the House of Representatives. However, do it over a data set
 ## that only includes the most recent n votes, to show that it is possible to
@@ -160,15 +198,15 @@ def limited_house_classifier(house_people, house_votes, n, verbose = False):
                                    
 ## Find a value of n that classifies at least 430 representatives correctly.
 ## Hint: It's not 10.
-N_1 = 10
+N_1 = 540
 rep_classified = limited_house_classifier(house_people, house_votes, N_1)
 
 ## Find a value of n that classifies at least 90 senators correctly.
-N_2 = 10
+N_2 = 100
 senator_classified = limited_house_classifier(senate_people, senate_votes, N_2)
 
 ## Now, find a value of n that classifies at least 95 of last year's senators correctly.
-N_3 = 10
+N_3 = 100
 old_senator_classified = limited_house_classifier(last_senate_people, last_senate_votes, N_3)
 
 
