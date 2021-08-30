@@ -60,7 +60,7 @@ class Input(ValuedElement,DifferentiableElement):
         
         returns: number (float or int)
         """
-        raise NotImplementedError, "Implement me!"
+        return self.get_value()
 
     def dOutdX(self, elem):
         """
@@ -71,7 +71,7 @@ class Input(ValuedElement,DifferentiableElement):
 
         returns: number (float or int)
         """
-        raise NotImplementedError, "Implement me!"
+        return 0
 
 class Weight(ValuedElement):
     """
@@ -147,9 +147,6 @@ class Neuron(DifferentiableElement):
         weights = self.get_descendant_weights()
         return weight.get_name() in self.get_descendant_weights()
 
-    def get_weight_nodes(self):
-        return self.my_weights
-
     def clear_cache(self):
         self.my_output = None
         self.my_doutdx = {}
@@ -170,7 +167,15 @@ class Neuron(DifferentiableElement):
 
         returns: number (float or int)
         """
-        raise NotImplementedError, "Implement me!"
+        z = 0
+        inputs = self.get_inputs()
+        weights = self.get_weights()
+        for i in xrange(len(weights)):
+            input = inputs[i]
+            weight = weights[i]
+            z += input.output() * weight.get_value()
+
+        return 1 / (1 + math.exp(-z))
 
     def dOutdX(self, elem):
         # Implement compute_doutdx instead!!
@@ -190,7 +195,15 @@ class Neuron(DifferentiableElement):
 
         returns: number (float/int)
         """
-        raise NotImplementedError, "Implement me!"
+        sum = 0
+        inputs = self.get_inputs()
+        weights = self.get_weights()
+        for i in xrange(len(weights)):
+            input = inputs[i]
+            weight = weights[i]
+            sum += input.dOutdX(weight.get_value()) * weight.get_value()
+
+        return self.output() * (1 - self.output()) * sum
 
     def get_weights(self):
         return self.my_weights
@@ -225,7 +238,7 @@ class PerformanceElem(DifferentiableElement):
         
         returns: number (float/int)
         """
-        raise NotImplementedError, "Implement me!"
+        return -0.5 * math.pow(self.my_desired_val - self.get_input().output(), 2)
 
     def dOutdX(self, elem):
         """
@@ -236,7 +249,7 @@ class PerformanceElem(DifferentiableElement):
 
         returns: number (int/float)
         """
-        raise NotImplementedError, "Implement me!"
+        return (self.my_desired_val - self.get_input().output()) * self.get_input().dOutdX(elem)
 
     def set_desired(self,new_desired):
         self.my_desired_val = new_desired
@@ -265,7 +278,7 @@ class Network(object):
         self.weights.reverse()
         self.weights = []
         for n in self.neurons:
-            self.weights += n.get_weight_nodes()
+            self.weights += n.get_weights()
 
     def clear_cache(self):
         for n in self.neurons:
@@ -335,7 +348,28 @@ def make_neural_net_two_layer():
     See 'make_neural_net_basic' for required naming convention for inputs,
     weights, and neurons.
     """
-    raise NotImplementedError, "Implement me!"
+    i0 = Input('i0', -1.0) # this input is immutable
+    i1 = Input('i1', 0.0)
+    i2 = Input('i2', 0.0)
+
+    w1A = Weight('w1A', 1)
+    w1B = Weight('w1B', 1)
+    w2A = Weight('w2A', 1)
+    w2B = Weight('w2B', 1)
+    wAC = Weight('wAC', 1)
+    wBC = Weight('wBC', 1)
+    wA  = Weight('wA', 1)
+    wB  = Weight('wB', 1)
+    wC  = Weight('wC', 1)
+
+    # Inputs must be in the same order as their associated weights
+    A = Neuron('A', [i1,i2,i0], [w1A,w2A,wA])
+    B = Neuron('B', [i1,i2,i0], [w1B,w2B,wB])
+    C = Neuron('C', [A,B,i0], [wAC,wBC,wC])
+    P = PerformanceElem(C, 0.0)
+
+    net = Network(P,[A,B,C])
+    return net
 
 def make_neural_net_challenging():
     """
