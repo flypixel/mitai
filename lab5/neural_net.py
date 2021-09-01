@@ -367,6 +367,7 @@ def make_neural_net_two_layer():
     i1 = Input('i1', 0.0)
     i2 = Input('i2', 0.0)
 
+    seed_random()
     w1A = Weight('w1A', random_weight())
     w1B = Weight('w1B', random_weight())
     w2A = Weight('w2A', random_weight())
