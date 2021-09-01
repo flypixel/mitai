@@ -198,12 +198,18 @@ class Neuron(DifferentiableElement):
         sum = 0
         inputs = self.get_inputs()
         weights = self.get_weights()
-        for i in xrange(len(weights)):
-            input = inputs[i]
-            weight = weights[i]
-            sum += input.dOutdX(weight.get_value()) * weight.get_value()
 
-        return self.output() * (1 - self.output()) * sum
+        if self.has_weight(elem):
+            input = self.get_input(elem)
+
+            return self.output() * (1 - self.output()) * input.output()
+        else:
+            sum = 0
+            for i in xrange(len(inputs)):
+                weight = weights[i]
+                sum += inputs[i].dOutdX(elem) * weight.get_value()
+
+            return self.output() * (1 - self.output()) * sum
 
     def get_weights(self):
         return self.my_weights
@@ -213,6 +219,15 @@ class Neuron(DifferentiableElement):
 
     def get_name(self):
         return self.my_name
+
+    def get_input(self, w):
+        inputs = self.get_inputs()
+        weights = self.get_weights()
+        for i in xrange(len(weights)):
+            weight = weights[i]
+            if weight.get_name() == w.get_name():
+                input = inputs[i]
+        return input
 
     def __repr__(self):
         return "Neuron(%s)" %(self.my_name)
@@ -352,15 +367,15 @@ def make_neural_net_two_layer():
     i1 = Input('i1', 0.0)
     i2 = Input('i2', 0.0)
 
-    w1A = Weight('w1A', 1)
-    w1B = Weight('w1B', 1)
-    w2A = Weight('w2A', 1)
-    w2B = Weight('w2B', 1)
-    wAC = Weight('wAC', 1)
-    wBC = Weight('wBC', 1)
-    wA  = Weight('wA', 1)
-    wB  = Weight('wB', 1)
-    wC  = Weight('wC', 1)
+    w1A = Weight('w1A', random_weight())
+    w1B = Weight('w1B', random_weight())
+    w2A = Weight('w2A', random_weight())
+    w2B = Weight('w2B', random_weight())
+    wAC = Weight('wAC', random_weight())
+    wBC = Weight('wBC', random_weight())
+    wA  = Weight('wA', random_weight())
+    wB  = Weight('wB', random_weight())
+    wC  = Weight('wC', random_weight())
 
     # Inputs must be in the same order as their associated weights
     A = Neuron('A', [i1,i2,i0], [w1A,w2A,wA])
@@ -381,7 +396,36 @@ def make_neural_net_challenging():
     weights, and neurons.
     """
 
-    raise NotImplementedError, "Implement me!"
+    i0 = Input('i0', -1.0) # this input is immutable
+    i1 = Input('i1', 0.0)
+    i2 = Input('i2', 0.0)
+
+    w1A = Weight('w1A', random_weight())
+    w1B = Weight('w1B', random_weight())
+    w2A = Weight('w2A', random_weight())
+    w2B = Weight('w2B', random_weight())
+    wAC = Weight('wAC', random_weight())
+    wAD = Weight('wAD', random_weight())
+    wBC = Weight('wBC', random_weight())
+    wBD = Weight('wBD', random_weight())
+    wCE = Weight('wCE', random_weight())
+    wDE = Weight('wDE', random_weight())
+    wA  = Weight('wA', random_weight())
+    wB  = Weight('wB', random_weight())
+    wC  = Weight('wC', random_weight())
+    wD  = Weight('wD', random_weight())
+    wE  = Weight('wE', random_weight())
+
+    # Inputs must be in the same order as their associated weights
+    A = Neuron('A', [i1,i2,i0], [w1A,w2A,wA])
+    B = Neuron('B', [i1,i2,i0], [w1B,w2B,wB])
+    C = Neuron('C', [A,B,i0], [wAC,wBC,wC])
+    D = Neuron('D', [A,B,i0], [wAD,wBD,wD])
+    E = Neuron('E', [C,D,i0], [wCE,wDE,wE])
+    P = PerformanceElem(E, 0.0)
+
+    net = Network(P,[A,B,C,D,E])
+    return net
 
 def make_neural_net_with_weights():
     """

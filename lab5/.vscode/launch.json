@@ -7,7 +7,7 @@
         {
             "name": "Python: Current File",
             "type": "python",
-            "args": ["simple"],
+            "args": ["two_layer"],
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
