@@ -396,35 +396,41 @@ def make_neural_net_challenging():
     weights, and neurons.
     """
 
-    i0 = Input('i0', -1.0) # this input is immutable
+    i0 = Input('i0', -1.0)
     i1 = Input('i1', 0.0)
     i2 = Input('i2', 0.0)
 
+    seed_random()
     w1A = Weight('w1A', random_weight())
     w1B = Weight('w1B', random_weight())
+    w1C = Weight('w1C', random_weight())
     w2A = Weight('w2A', random_weight())
     w2B = Weight('w2B', random_weight())
-    wAC = Weight('wAC', random_weight())
+    w2C = Weight('w2C', random_weight())
+
+    wA = Weight('wA', random_weight())
+    wB = Weight('wB', random_weight())
+    wC = Weight('wC', random_weight())
+    wD = Weight('wD', random_weight())
+    wE = Weight('wE', random_weight())
+
     wAD = Weight('wAD', random_weight())
-    wBC = Weight('wBC', random_weight())
+    wAE = Weight('wAE', random_weight())
     wBD = Weight('wBD', random_weight())
+    wBE = Weight('wBE', random_weight())
+    wCD = Weight('wCD', random_weight())
     wCE = Weight('wCE', random_weight())
     wDE = Weight('wDE', random_weight())
-    wA  = Weight('wA', random_weight())
-    wB  = Weight('wB', random_weight())
-    wC  = Weight('wC', random_weight())
-    wD  = Weight('wD', random_weight())
-    wE  = Weight('wE', random_weight())
 
-    # Inputs must be in the same order as their associated weights
-    A = Neuron('A', [i1,i2,i0], [w1A,w2A,wA])
-    B = Neuron('B', [i1,i2,i0], [w1B,w2B,wB])
-    C = Neuron('C', [A,B,i0], [wAC,wBC,wC])
-    D = Neuron('D', [A,B,i0], [wAD,wBD,wD])
-    E = Neuron('E', [C,D,i0], [wCE,wDE,wE])
+    A = Neuron('A', [i0,i1,i2], [wA,w1A,w2A])
+    B = Neuron('B', [i0,i1,i2], [wB,w1B,w2B])
+    C = Neuron('C', [i0,i1,i2], [wC,w1C,w2C])
+    D = Neuron('D', [i0,A,B,C], [wD,wAD,wBD,wCD])
+    E = Neuron('E', [i0,A,B,C,D], [wE,wAE,wBE,wCE,wDE])
+
     P = PerformanceElem(E, 0.0)
 
-    net = Network(P,[A,B,C,D,E])
+    net = Network(P, [A,B,C,D,E])
     return net
 
 def make_neural_net_with_weights():
